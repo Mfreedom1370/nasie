@@ -11,7 +11,7 @@ const LT={'c+':e=>`➕ مشتری جدید: ${e.n}`,'c~':e=>`✏️ ویرایش
 const logText=e=>(LT[e.t]||(()=>e.t))(e);
 function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,3000)}
 function sheet(h){$('#sheet').innerHTML=`<div class="box">${h}</div>`;$('#sheet').hidden=false}
-function closeSheet(){$('#sheet').hidden=true;render()}
+function closeSheet(){LL=null;$('#sheet').hidden=true;render()}
 function anim(){document.querySelectorAll('[data-n]').forEach(el=>{const t=+el.dataset.n,s=performance.now();(function f(n){const p=Math.min(1,(n-s)/800);el.textContent=fmt(t*(1-(1-p)**3));if(p<1)requestAnimationFrame(f)})(s)});
  document.querySelectorAll('main>*,main .kpis>div').forEach((el,i)=>el.style.setProperty('--i',Math.min(i,14)))}
 function render(){$('#total').innerHTML=`جمع بدهی‌ها<b data-n="${Store.total()}"></b> تومان`;
@@ -25,14 +25,20 @@ function vDash(){const cs=Store.d.customers.map(c=>({c,b:Store.bal(c.id)})),db=c
  gs=db.filter(x=>x.c.guest).sort((a,b)=>age(b.c)-age(a.c)),ms=months(),cur=ms[5],top=[...db].sort((a,b)=>b.b-a.b).slice(0,5),mx=top[0]?.b||1,now=new Date(),
  bk=now.getHours()>=Store.d.set.bkHour&&Store.d.set.lastBk!==now.toDateString();
  const m=Math.max(...ms.flatMap(x=>[x.d,x.p]),1),bars=ms.map((x,i)=>`<rect x="${i*48+8}" y="${95-x.d/m*80}" width="16" height="${x.d/m*80}" rx="3" fill="var(--bad)"/><rect x="${i*48+25}" y="${95-x.p/m*80}" width="16" height="${x.p/m*80}" rx="3" fill="var(--ok)"/><text x="${i*48+25}" y="110" text-anchor="middle" font-size="10" fill="var(--mut)">${x.l}</text>`).join('');
- const k=(c,l,v)=>`<div class="${c}"><small>${l}</small><b data-n="${v}"></b></div>`;
+ const k=(c,l,v,f)=>`<div class="${c}" onclick="listBy('${f}')"><small>${l}</small><b data-n="${v}"></b></div>`;
  return`${bk?'<div class="bk" onclick="backup()">📦 بکاپ امروز هنوز گرفته نشده — برای گرفتن لمس کن</div>':''}
- <div class="kpis">${k('k-bad','جمع بدهی‌ها',Store.total())}${k('','تعداد بدهکاران',db.length)}${k('k-warn','عقب‌افتاده',late.length)}${k('k-bad','بالای حد مجاز',over.length)}${k('','نسیه‌ی این ماه',cur.d)}${k('k-ok','دریافتی این ماه',cur.p)}</div>
+ <div class="kpis">${k('k-bad','جمع بدهی‌ها',Store.total(),'debtors')}${k('','تعداد بدهکاران',db.length,'debtors')}${k('k-warn','عقب‌افتاده',late.length,'late')}${k('k-bad','بالای حد مجاز',over.length,'over')}${k('','نسیه‌ی این ماه',cur.d,'mDebt')}${k('k-ok','دریافتی این ماه',cur.p,'mPay')}</div>
  <div class="box2 gbox"><h3>👤 کاسب‌های موقت (بیشترین دیرکرد اول)</h3>${gs.map(x=>`<div class="lr" onclick="profile('${x.c.id}')"><span>${esc(x.c.name)} <small>${fmt(age(x.c))} روز</small></span><b class="gv">${fmt(x.b)}</b></div>`).join('')||'<small>کاسب موقتی نیست</small>'}</div>
  <div class="box2"><h3>نسیه و دریافتی ماهانه</h3><svg class="sv" viewBox="0 0 290 118">${bars}</svg><div class="lg"><span><i style="background:var(--bad)"></i>نسیه</span><span><i style="background:var(--ok)"></i>دریافتی</span></div></div>
  <div class="box2"><h3>بیشترین بدهکاران</h3>${top.map(x=>`<div class="bar" onclick="profile('${x.c.id}')"><span>${esc(x.c.name)}</span><i style="width:${x.b/mx*100}%"></i><b>${fmt(x.b)}</b></div>`).join('')||'<p class="empty">داده‌ای نیست</p>'}</div>
  <div class="box2"><h3>عقب‌افتاده‌ها (بیشترین تاخیر)</h3>${late.slice(0,6).map(x=>`<div class="lr" onclick="profile('${x.c.id}')"><span>${esc(x.c.name)} <small>${fmt(age(x.c))} روز</small></span><b class="warn">${fmt(x.b)}</b></div>`).join('')||'<small>موردی نیست 👌</small>'}</div>
  <div class="box2"><h3>روند مانده‌ی کل</h3>${trend(ms)}</div>`}
+let LL=null;
+function listBy(k){LL=k;const cs=Store.d.customers.map(c=>({c,b:Store.bal(c.id)})),db=cs.filter(x=>x.b>0),ms=new Date(new Date().getFullYear(),new Date().getMonth(),1).getTime();
+ if(k==='mDebt'||k==='mPay'){const T=Store.d.tx.filter(t=>t.ts>=ms&&(k==='mDebt'?t.amt>0:t.amt<0)&&t.note!=='مانده‌ی انتقالی از برنامه‌ی قبلی').sort((a,b)=>b.ts-a.ts);
+  return sheet(`<h2>${k==='mDebt'?'نسیه‌های این ماه':'دریافتی‌های این ماه'} <small>(${fmt(T.length)} مورد)</small></h2>${T.map(t=>`<div class="card" onclick="profile('${t.cid}')"><div><b>${esc(Store.nm(t.cid))}</b><small>${dt(t.ts)} ${esc(t.note)}</small></div><div class="amt ${t.amt<0?'ok':'bad'}">${fmt(t.amt)}<small>تومان</small></div></div>`).join('')||'<p class="empty">موردی نیست</p>'}<div class="row"><button onclick="closeSheet()">بستن</button></div>`)}
+ const m={debtors:['بدهکاران',db.sort((a,b)=>b.b-a.b)],late:['عقب‌افتاده‌ها',db.filter(x=>!x.c.guest&&age(x.c)>dys(x.c)).sort((a,b)=>age(b.c)-age(a.c))],over:['بالای حد مجاز',db.filter(x=>x.b>lim(x.c)).sort((a,b)=>b.b-a.b)]},[t,L]=m[k];
+ sheet(`<h2>${t} <small>(${fmt(L.length)} نفر)</small></h2>${L.map(x=>`<div class="card" onclick="profile('${x.c.id}')"><div><b>${esc(x.c.name)}</b>${x.c.guest?' <span class="tag gt">مهمان</span>':''}<small>${fmt(age(x.c))} روز از آخرین پرداخت${x.c.alias?' · «'+esc(x.c.alias)+'»':''}</small></div><div class="amt ${st(x.c,x.b)}">${fmt(x.b)}<small>تومان</small></div></div>`).join('')||'<p class="empty">موردی نیست</p>'}<div class="row"><button onclick="closeSheet()">بستن</button></div>`)}
 function trend(ms){const mx=Math.max(...ms.map(p=>p.net),1),xy=ms.map((p,i)=>[25+i*48,90-Math.max(p.net,0)/mx*70]);
  return`<svg class="sv" viewBox="0 0 290 118"><polyline pathLength="1" fill="none" stroke="var(--ac)" stroke-width="3" points="${xy.map(a=>a.join(',')).join(' ')}"/>${xy.map((a,i)=>`<circle cx="${a[0]}" cy="${a[1]}" r="4" fill="var(--ac)"/><text x="${a[0]}" y="110" text-anchor="middle" font-size="10" fill="var(--mut)">${ms[i].l}</text>`).join('')}</svg>`}
 // ---------- مشتریان ----------
@@ -48,7 +54,7 @@ function profile(id){const c=find(id),b=Store.bal(id);if(!c)return;
  <label>ثبت دستی</label><div class="row"><input id="ma" type="number" inputmode="numeric" placeholder="مبلغ (تومان)"><input id="mn" placeholder="توضیح"></div>
  <div class="row"><button class="pri" onclick="manual('${id}',1)">+ بدهی</button><button onclick="manual('${id}',-1)">− پرداخت</button></div>
  <label>تاریخچه</label>${Store.d.tx.filter(t=>t.cid===id).sort((a,b)=>b.ts-a.ts).map(t=>`<div class="tx"><span>${dt(t.ts)} ${esc(t.note)}</span><b class="${t.amt<0?'ok':''}">${t.amt<0?'−':'+'}${fmt(t.amt)}</b><button onclick="delTx('${t.id}','${id}')">🗑</button></div>`).join('')||'<small>هنوز ثبتی نیست</small>'}
- <div class="row"><button onclick="editForm('${id}')">ویرایش پروفایل</button><button onclick="closeSheet()">بستن</button></div>`)}
+ <div class="row">${LL?'<button onclick="listBy(LL)">◀ بازگشت به لیست</button>':''}<button onclick="editForm('${id}')">ویرایش پروفایل</button><button onclick="closeSheet()">بستن</button></div>`)}
 function manual(id,sg){const a=+$('#ma').value;if(!a)return toast('مبلغ را وارد کن');Store.addTx(id,sg*a,$('#mn').value);alertLimit(find(id),sg);profile(id)}
 function alertLimit(c,sg){const b=Store.bal(c.id);if(sg>0&&b>lim(c))tg(`⚠️ بدهی ${c.name} به ${fmt(b)} تومان رسید (حد: ${fmt(lim(c))})`)}
 function editForm(id,pre){const c=id?find(id):(pre||{});
