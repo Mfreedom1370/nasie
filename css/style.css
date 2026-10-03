@@ -31,3 +31,17 @@ main input{width:100%;padding:10px;border:1px solid var(--bd);border-radius:10px
 .box a{color:var(--ac)}.dng{color:var(--bad)}.sr{margin-bottom:10px;width:100%;padding:11px;border:1px solid var(--bd);border-radius:14px;background:var(--card);color:var(--fg);font:inherit}
 .lr{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd);font-size:14px}.lr:last-child{border:0}
 .lg{display:flex;gap:12px;font-size:12px;color:var(--mut);margin-top:4px}.lg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-inline-end:4px}
+header{background:linear-gradient(120deg,#0f6b5c,#1f9a84,#2b7fb8,#0f6b5c);background-size:300% 300%;animation:flow 14s ease infinite}
+.hrow{display:flex;justify-content:space-between;align-items:center}#trb{background:#fff2;border:0;color:#fff;font-size:18px;border-radius:50%;width:38px;height:38px;padding:0}
+@keyframes flow{50%{background-position:100% 50%}}@keyframes fade{from{opacity:0;transform:translateY(14px)}}
+.kpis>div,.box2,.card{animation:fade .5s both;animation-delay:calc(var(--i,0)*45ms)}.kpis>div{transition:transform .2s}.kpis>div:active,.card:active{transform:scale(.97)}
+@keyframes grow{from{width:0}}@keyframes up{from{transform:scaleY(0)}}@keyframes dash{from{stroke-dashoffset:1}}
+.bar i{animation:grow .9s cubic-bezier(.2,.8,.2,1) both}.sv rect{transform-box:fill-box;transform-origin:bottom;animation:up .8s cubic-bezier(.2,.8,.2,1) both}
+.sv polyline{stroke-dasharray:1;animation:dash 1.4s ease forwards}.sv circle{animation:fade .6s 1s both}
+:root{--gu:#7b4fd0}@media(prefers-color-scheme:dark){:root{--gu:#b496f5}}
+.gbox{border-color:var(--gu);box-shadow:0 0 0 1px var(--gu) inset}.gbox h3{color:var(--gu)}.gt{color:var(--gu);border-color:var(--gu)}.gv{color:var(--gu)}
+.bk{background:var(--warn);color:#fff;border-radius:14px;padding:12px;margin-bottom:12px;text-align:center;animation:fade .5s both}
+.opt{display:flex;gap:8px;align-items:center;margin:6px 0;padding:8px;background:var(--card);border-radius:10px;color:var(--fg);font-size:14px}.opt input[type=radio],.opt input[type=checkbox]{width:auto}
+.dayh{margin:14px 0 4px;font-size:15px}.lgr{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--bd);font-size:14px}.lgr time{color:var(--mut);min-width:44px}
+#mic.on{background:var(--bad);animation:pulse 1s infinite}@keyframes pulse{50%{box-shadow:0 0 0 8px #c0392b33}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
