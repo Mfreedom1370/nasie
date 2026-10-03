@@ -16,7 +16,7 @@ function anim(){document.querySelectorAll('[data-n]').forEach(el=>{const t=+el.d
  document.querySelectorAll('main>*,main .kpis>div').forEach((el,i)=>el.style.setProperty('--i',Math.min(i,14)))}
 function render(){$('#total').innerHTML=`جمع بدهی‌ها<b data-n="${Store.total()}"></b> تومان`;
  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));
- $('#view').innerHTML=({dash:vDash,list:vList,log:vLog,set:vSet})[tab]();anim()}
+ $('#view').innerHTML=({dash:vDash,list:vList,log:vLog,ai:vAI,set:vSet})[tab]();document.body.classList.toggle('ai',tab==='ai');anim()}
 // ---------- داشبورد ----------
 function months(){const out=[],n=new Date();
  for(let i=5;i>=0;i--){const s=new Date(n.getFullYear(),n.getMonth()-i,1).getTime(),e=new Date(n.getFullYear(),n.getMonth()-i+1,1).getTime(),t=Store.d.tx.filter(x=>x.ts>=s&&x.ts<e&&x.note!=='مانده‌ی انتقالی از برنامه‌ی قبلی');
@@ -80,7 +80,8 @@ function purgeT(id){if(confirm('برای همیشه پاک شود؟')){Store.pur
 function vSet(){const s=Store.d.set;
  return`<label>توکن ربات تلگرام</label><input value="${esc(s.token)}" onchange="setv('token',this.value)" dir="ltr"><label>Chat ID</label><input value="${esc(s.chat)}" onchange="setv('chat',this.value)" dir="ltr">
  <label>حد بدهی پیش‌فرض (تومان)</label><input type="number" value="${s.limit}" onchange="setv('limit',+this.value)"><label>مهلت پیش‌فرض پرداخت (روز)</label><input type="number" value="${s.days}" onchange="setv('days',+this.value)">
- <label>ساعت یادآور بکاپ روزانه (۰ تا ۲۳)</label><input type="number" min="0" max="23" value="${s.bkHour}" onchange="setv('bkHour',+this.value)">
+ <label>دستیار هوشمند — آدرس سرویس (OpenAI یا سازگار)</label><input value="${esc(s.aiUrl)}" onchange="setv('aiUrl',this.value)" dir="ltr"><label>کلید API</label><input type="password" value="${esc(s.aiKey)}" onchange="setv('aiKey',this.value)" dir="ltr"><label>نام مدل</label><input value="${esc(s.aiModel)}" onchange="setv('aiModel',this.value)" dir="ltr">
+ <small>با فعال بودن دستیار، خلاصه‌ی حساب‌ها (شامل نام مشتری‌ها) برای سرویس انتخابی ارسال می‌شود.</small><label>ساعت یادآور بکاپ روزانه (۰ تا ۲۳)</label><input type="number" min="0" max="23" value="${s.bkHour}" onchange="setv('bkHour',+this.value)">
  <div class="row"><button class="pri" onclick="backup()">📦 بکاپ اکسل الان</button><button onclick="tg('✅ پیام آزمایشی دفتر نسیه').then(o=>toast(o?'ارسال شد':'ارسال نشد؛ توکن/Chat ID را بررسی کن'))">تست تلگرام</button></div>
  <small>آخرین بکاپ اکسل: ${s.lastBk||'—'}. فایل در گوشی ذخیره می‌شود و اگر تلگرام وصل باشد همان‌جا هم فرستاده می‌شود.</small>
  <div class="row"><button onclick="Store.exportJson()">خروجی JSON</button><button onclick="$('#imp').click()">بازیابی JSON</button><button onclick="trashView()">🗑 سطل زباله</button></div>
@@ -96,6 +97,24 @@ async function backup(){try{await loadX()}catch(e){return toast('برای ساخ
  a.href=URL.createObjectURL(blob);a.download=name;a.click();setv('lastBk',new Date().toDateString());
  const s=D.set;if(s.token&&s.chat){const f=new FormData();f.append('chat_id',s.chat);f.append('document',blob,name);
   try{const r=await fetch(`https://api.telegram.org/bot${s.token}/sendDocument`,{method:'POST',body:f});toast(r.ok?'بکاپ ذخیره و به تلگرام فرستاده شد':'بکاپ ذخیره شد؛ ارسال تلگرام ناموفق بود')}catch(e){toast('بکاپ ذخیره شد؛ تلگرام در دسترس نیست')}}else toast('بکاپ اکسل ذخیره شد');render()}
+// ---------- دستیار هوشمند (سازگار با OpenAI) ----------
+let chat=[];
+function vAI(){const s=Store.d.set;if(!s.aiKey)return'<p class="empty">برای فعال شدن، در «تنظیمات» کلید API را وارد کن.</p>';
+ return`<div id="chat">${chat.map(m=>`<div class="msg ${m.r}">${esc(m.c)}</div>`).join('')||'<p class="empty">از دستیار درباره‌ی بدهی‌ها، دیرکردها و روند حساب‌ها بپرس.</p>'}</div>
+ <div class="aibar"><input id="aq" placeholder="مثلا: کدام بدهکارها پرریسک‌ترند؟" onkeydown="if(event.key==='Enter')askAI()"><button class="pri" onclick="askAI()">بپرس</button></div>`}
+function ctx(q){const cs=Store.d.customers.map(c=>({c,b:Store.bal(c.id)})),db=cs.filter(x=>x.b>0).sort((a,b)=>b.b-a.b),nq=norm(q),
+ row=x=>`${x.c.name}${x.c.alias?' ('+x.c.alias+')':''}${x.c.guest?' [مهمان]':''}: ${Math.round(x.b)} تومان، ${age(x.c)} روز از آخرین پرداخت`;
+ let t=`امروز: ${dt(Date.now())}\nجمع بدهی: ${Math.round(Store.total())} تومان\nتعداد مشتری: ${cs.length}، بدهکار: ${db.length}\nحد پیش‌فرض: ${lim({})} تومان، مهلت پیش‌فرض: ${dys({})} روز\n۲۰ بدهکار اول:\n${db.slice(0,20).map(row).join('\n')}\nمهمان‌های بدهکار:\n${db.filter(x=>x.c.guest).map(row).join('\n')||'—'}\nماهانه (نسیه/دریافتی): ${months().map(m=>`${m.l}:${m.d}/${m.p}`).join(' ، ')}`;
+ for(const x of cs.filter(x=>nq.includes(norm(x.c.name))||(x.c.alias&&nq.includes(norm(x.c.alias)))).slice(0,3))
+  t+=`\nجزئیات ${x.c.name} (حد ${lim(x.c)}، مهلت ${dys(x.c)} روز): `+Store.d.tx.filter(y=>y.cid===x.c.id).sort((a,b)=>b.ts-a.ts).slice(0,15).map(y=>`${dt(y.ts)} ${y.amt}`).join('، ');
+ return t}
+async function askAI(){const q=$('#aq').value.trim(),s=Store.d.set;if(!q)return;chat.push({r:'user',c:q},{r:'assistant',c:'…'});render();
+ const sys='تو دستیار حسابداری یک فروشگاه هستی. فقط بر اساس داده‌ی زیر و گفت‌وگو پاسخ بده، هرگز عدد یا نام از خودت نساز، اگر داده کافی نیست بگو. فارسی، کوتاه و روشن جواب بده. مبالغ به تومان است.\n\n'+ctx(q);
+ try{const r=await fetch(s.aiUrl.replace(/\/$/,'')+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+s.aiKey},
+  body:JSON.stringify({model:s.aiModel,temperature:.3,messages:[{role:'system',content:sys},...chat.slice(0,-1).slice(-8).map(m=>({role:m.r,content:m.c}))]})});
+  const j=await r.json();chat[chat.length-1].c=r.ok?j.choices[0].message.content:'خطا: '+(j.error?.message||r.status)}
+ catch(e){chat[chat.length-1].c='اتصال به سرویس برقرار نشد؛ اینترنت یا VPN را بررسی کن.'}
+ render();window.scrollTo(0,document.body.scrollHeight)}
 // ---------- دستور صوتی/متنی ----------
 function run(text){if(!text.trim())return;const r=parseCmd(text);
  if(r.intent==='nav'){if(r.to==='trash')return trashView();if(r.to==='backup')return backup();tab=r.to;return render()}
@@ -123,10 +142,14 @@ function sweep(){const today=new Date().toDateString();
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;render()});
 $('#go').onclick=()=>run($('#cmd').value);$('#cmd').onkeydown=e=>{if(e.key==='Enter')run(e.target.value)};
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition,score=r=>r.intent!=='tx'?3:(r.amt?2:0)+(r.cands.length?2:r.name?.5:0);
-if(!SR)$('#mic').hidden=true;else{const rec=new SR();rec.lang='fa-IR';rec.interimResults=true;rec.maxAlternatives=5;let on=false;
- rec.onstart=()=>{on=true;$('#mic').classList.add('on')};rec.onend=()=>{on=false;$('#mic').classList.remove('on')};
- rec.onerror=e=>toast(e.error==='not-allowed'?'مجوز میکروفون نیست؛ از میکروفون کیبورد استفاده کن':'خطا: '+e.error);
- rec.onresult=e=>{const R=e.results[e.results.length-1];$('#cmd').value=R[0].transcript;
+let rec=null,on=false,retried=false;
+function listen(){const r=new SR();rec=r;r.lang='fa-IR';r.interimResults=true;r.maxAlternatives=5;
+ r.onstart=()=>{on=true;$('#mic').classList.add('on')};r.onend=()=>{on=false;$('#mic').classList.remove('on')};
+ r.onerror=e=>{if(e.error==='network'||e.error==='service-not-allowed'){if(!retried){retried=true;return setTimeout(listen,700)}retried=false;$('#cmd').focus();
+   return toast('سرویس گفتار گوگل در دسترس نیست (اینترنت/فیلتر). فعلاً از میکروفون کیبورد در همین کادر استفاده کن.')}
+  if(e.error==='no-speech')return toast('صدایی شنیده نشد');if(e.error==='aborted')return;toast(e.error==='not-allowed'?'مجوز میکروفون نیست':'خطا: '+e.error)};
+ r.onresult=e=>{retried=false;const R=e.results[e.results.length-1];$('#cmd').value=R[0].transcript;
   if(R.isFinal){let best=R[0].transcript,bs=-1;for(let i=0;i<R.length;i++){const s=score(parseCmd(R[i].transcript));if(s>bs){bs=s;best=R[i].transcript}}$('#cmd').value=best;run(best)}};
- $('#mic').onclick=()=>{try{on?rec.stop():rec.start()}catch(e){}}}
+ try{r.start()}catch(e){}}
+if(!SR)$('#mic').hidden=true;else $('#mic').onclick=()=>{if(on)return rec.stop();retried=false;listen()};
 render();sweep();

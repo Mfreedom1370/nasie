@@ -1,5 +1,5 @@
 // ذخیره‌سازی محلی. amt مثبت = نسیه، منفی = پرداخت. حذف‌ها اول به سطل زباله می‌روند.
-const DEF={token:'',chat:'',limit:5000000,days:30,bkHour:22,lastBk:''};
+const DEF={token:'',chat:'',limit:5000000,days:30,bkHour:22,lastBk:'',aiUrl:'https://api.openai.com/v1',aiKey:'',aiModel:'gpt-4o-mini'};
 const Store={d:{customers:[],tx:[],trash:[],log:[],set:{...DEF},alerts:{}},
  load(){try{const x=JSON.parse(localStorage.getItem('nasie')||'{}');Object.assign(this.d,x);this.d.set={...DEF,...x.set}}catch(e){}},
  save(){localStorage.setItem('nasie',JSON.stringify(this.d))},
