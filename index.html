@@ -6,5 +6,5 @@
 <main id="view"></main><div id="sheet" hidden></div><div id="toast" hidden></div>
 <div class="cmd"><input id="cmd" placeholder="مثلا: پنجاه هزار تومان بزن به حساب علی" enterkeyhint="go"><button id="mic">🎤</button><button id="go">ثبت</button></div>
 <nav><button data-t="dash">داشبورد</button><button data-t="list">مشتریان</button><button data-t="log">تغییرات</button><button data-t="ai">دستیار</button><button data-t="set">تنظیمات</button></nav>
-<script src="js/store.js"></script><script src="js/parser.js"></script><script src="js/telegram.js"></script><script src="js/app.js"></script>
-<script>if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js')</script></body></html>
+<script src="js/store.js"></script><script src="js/parser.js"></script><script src="js/ledger.js"></script><script src="js/telegram.js"></script><script src="js/app.js"></script>
+<script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{r.update();r.addEventListener('updatefound',()=>{const n=r.installing;n&&n.addEventListener('statechange',()=>{if(n.state==='installed'&&navigator.serviceWorker.controller&&window.toast)toast('نسخه‌ی جدید آماده شد؛ اپ را کامل ببند و دوباره باز کن')})})}).catch(()=>{}))</script></body></html>

@@ -51,3 +51,4 @@ header{background:linear-gradient(120deg,#0f6b5c,#1f9a84,#2b7fb8,#0f6b5c);backgr
 nav button{padding:14px 4px;font-size:13px}
 
 .kpis>div[onclick]{cursor:pointer}.kpis>div[onclick]::after{content:'‹';float:left;color:var(--mut);margin-top:-34px}
+.note.warn{color:var(--warn)}.tx small.warn{color:var(--warn)}
