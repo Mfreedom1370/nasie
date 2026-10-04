@@ -1,7 +1,9 @@
+@font-face{font-family:'IranYekan';src:url('fonts/iranyekanwebregular.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'IranYekan';src:url('fonts/iranyekanwebbold.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap}
 :root{--bg:#f4f3ee;--fg:#1d1d1b;--card:#fff;--mut:#6f6e68;--ac:#0f6b5c;--bad:#c0392b;--warn:#c27a00;--ok:#1b7a3d;--bd:#e2e0d8}
 @media(prefers-color-scheme:dark){:root{--bg:#121413;--fg:#eceae4;--card:#1d201f;--mut:#9a9890;--ac:#3fb8a2;--bd:#2d312f;--ok:#58c17c;--warn:#e0a040;--bad:#f07a70}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 Vazirmatn,Tahoma,system-ui,sans-serif;padding:0 0 150px}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 'IranYekan',Tahoma,system-ui,sans-serif;padding:0 0 150px}
 header{background:linear-gradient(135deg,#0f6b5c,#1f9a84);color:#fff;padding:calc(14px + env(safe-area-inset-top,0px)) 18px 22px;border-radius:0 0 26px 26px}
 h1{margin:0;font-size:17px;opacity:.9}#total{font-size:14px}#total b{display:block;font-size:30px;line-height:1.3}
 main{padding:14px}.card{display:flex;justify-content:space-between;align-items:center;background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:14px;margin-bottom:10px}
@@ -53,9 +55,15 @@ nav button{padding:14px 4px;font-size:13px}
 .kpis>div[onclick]{cursor:pointer}.kpis>div[onclick]::after{content:'‹';float:left;color:var(--mut);margin-top:-34px}
 .note.warn{color:var(--warn)}.tx small.warn{color:var(--warn)}
 
-.xbar{position:sticky;top:0;z-index:3;display:flex;justify-content:flex-end;margin:-18px -18px 4px;padding:10px 12px 4px;background:var(--bg)}
 .x{width:38px;height:38px;border-radius:50%;padding:0;font-size:17px;line-height:1;background:var(--card);color:var(--fg);border:1px solid var(--bd)}
 .srow{display:flex;gap:8px;margin-bottom:10px}.srow .sr{margin:0;flex:1;min-width:0}.addb{white-space:nowrap}
 .rb{display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--bd)}.rb i{display:block;animation:grow .9s both}
 .rk-high{color:var(--bad)}.rk-mid{color:var(--warn)}.rk-low{color:var(--ok)}.tag.rk-high{border-color:var(--bad)}.tag.rk-mid{border-color:var(--warn)}.tag.rk-low{border-color:var(--ok)}
 select.sr{width:100%}
+
+svg text{font-family:inherit}
+/* پنجره‌ها: ردیف ✕ جدا از محتوای اسکرول‌شونده، پس هیچ‌وقت روی نام‌ها نمی‌افتد */
+.sh{background:var(--bg);width:100%;max-height:88vh;display:flex;flex-direction:column;border-radius:22px 22px 0 0;animation:fade .25s both}
+.xrow{flex:none;display:flex;justify-content:flex-end;padding:10px 14px 0}
+.sh .box{flex:1;min-height:0;max-height:none;overflow:auto;border-radius:0;background:none;width:auto;padding:4px 18px 22px}
+.x{width:34px;height:34px;border-radius:50%;padding:0;font-size:15px;line-height:1;background:var(--card);color:var(--mut);border:1px solid var(--bd);box-shadow:none}

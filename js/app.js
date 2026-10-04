@@ -12,7 +12,7 @@ const sumTx=(id,f)=>Store.live().filter(t=>t.cid===id&&f(t)).reduce((a,t)=>a+Mat
 const LT={'c+':e=>`➕ مشتری جدید: ${e.n}`,'c~':e=>`✏️ ویرایش پروفایل: ${e.n}`,'c-':e=>`🗑 حذف مشتری: ${e.n}`,tx:e=>`${e.a>0?'🔴 نسیه':'🟢 پرداخت'} ${fmt(e.a)} — ${e.n}`,'tx-':e=>`🗑 حذف ثبت ${fmt(e.a)} — ${e.n}`,rs:e=>`♻️ بازیابی: ${e.n}`};
 const logText=e=>(LT[e.t]||(()=>e.t))(e);
 function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,3000)}
-function sheet(h){if(cmd)cmd.open=false;$('#sheet').innerHTML=`<div class="box"><div class="xbar"><button class="x" onclick="dismiss()" aria-label="بستن">✕</button></div>${h}</div>`;$('#sheet').hidden=false}
+function sheet(h){if(cmd)cmd.open=false;$('#sheet').innerHTML=`<div class="sh"><div class="xrow"><button class="x" onclick="dismiss()" aria-label="بستن">✕</button></div><div class="box">${h}</div></div>`;$('#sheet').hidden=false}
 function dismiss(){if(cmd&&cmd.open)cancelCmd();else closeSheet()}
 function closeSheet(){if(cmd)cmd.open=false;LL=null;$('#sheet').hidden=true;render()}
 function anim(){document.querySelectorAll('[data-n]').forEach(el=>{const t=+el.dataset.n,s=performance.now();(function f(n){const p=Math.min(1,(n-s)/800);el.textContent=fmt(t*(1-(1-p)**3));if(p<1)requestAnimationFrame(f)})(s)});
