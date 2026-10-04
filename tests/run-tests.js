@@ -56,6 +56,12 @@ p=P('پنجاه هزار تومان سهیلی کیا');eq(p.typeKnown,false,'ن
 p=P('مانده حساب سهیلی کیا چقدره');eq(p.intent,'ask','پرسش مانده');p=P('برو به تغییرات روزانه');eq(p.intent,'nav','ناوبری');p=P('آخرین ثبت رو پاک کن');eq(p.intent,'undo','undo');
 // ---- ۱۶) حذف/سطل زباله داده را از بین نمی‌برد ----
 reset();Store.d.customers.push({id:'Z',name:'ز'});const zt=Store.addTransaction({customerId:'Z',type:'credit',amount:10,date:T0});Store.delTx(zt.id);eq(Store.d.trash.length,1,'به سطل زباله رفت');eq(Store.restore(Store.d.trash[0].id),true,'بازیابی');eq(Store.bal('Z'),10,'مانده برگشت');
+// ---- ریسک مشتری ----
+reset();Store.d.customers.push({id:'R1',name:'خوش‌حساب'},{id:'R2',name:'بدحساب'},{id:'R3',name:'صفر'});
+Store.addTransaction({customerId:'R1',type:'credit',amount:1000000,date:Date.now()-5*DAY,dueDate:Date.now()+25*DAY});
+Store.addTransaction({customerId:'R2',type:'credit',amount:6000000,date:Date.now()-120*DAY,dueDate:Date.now()-90*DAY});
+Store.addTransaction({customerId:'R3',type:'credit',amount:100,date:Date.now()-10*DAY});Store.addTransaction({customerId:'R3',type:'payment',amount:100,date:Date.now()-5*DAY});
+eq(Ledger.risk('R1').level,'low','بدهی عادی = کم‌ریسک');eq(Ledger.risk('R2').level,'high','دیرکرد طولانی + بالای حد = پرریسک');ok(Ledger.risk('R2').score>Ledger.risk('R1').score,'امتیاز بدحساب بیشتر');eq(Ledger.risk('R3').score,0,'بدون بدهی = امتیاز صفر');ok(Ledger.risk('R2').reasons.length>=2,'دلیل‌ها توضیح داده می‌شوند');
 console.log(fail?('❌ '+fail+' تست ناموفق، '+pass+' موفق'):('✅ همه‌ی '+pass+' تست موفق'));process.exitCode=fail?1:0;
 `;
 const mem={};const ls={getItem:k=>k in mem?mem[k]:null,setItem:(k,v)=>{mem[k]=v}};

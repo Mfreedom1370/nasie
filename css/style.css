@@ -52,3 +52,10 @@ nav button{padding:14px 4px;font-size:13px}
 
 .kpis>div[onclick]{cursor:pointer}.kpis>div[onclick]::after{content:'‹';float:left;color:var(--mut);margin-top:-34px}
 .note.warn{color:var(--warn)}.tx small.warn{color:var(--warn)}
+
+.xbar{position:sticky;top:0;z-index:3;display:flex;justify-content:flex-end;margin:-18px -18px 4px;padding:10px 12px 4px;background:var(--bg)}
+.x{width:38px;height:38px;border-radius:50%;padding:0;font-size:17px;line-height:1;background:var(--card);color:var(--fg);border:1px solid var(--bd)}
+.srow{display:flex;gap:8px;margin-bottom:10px}.srow .sr{margin:0;flex:1;min-width:0}.addb{white-space:nowrap}
+.rb{display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--bd)}.rb i{display:block;animation:grow .9s both}
+.rk-high{color:var(--bad)}.rk-mid{color:var(--warn)}.rk-low{color:var(--ok)}.tag.rk-high{border-color:var(--bad)}.tag.rk-mid{border-color:var(--warn)}.tag.rk-low{border-color:var(--ok)}
+select.sr{width:100%}

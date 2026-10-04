@@ -2,7 +2,7 @@
 // فیلدهای قدیمی cid/amt/note/ts به‌عنوان «آینه» نگه داشته می‌شوند تا داده‌ها و کدهای قدیمی خراب نشوند.
 // type: credit(نسیه، +) | payment(پرداخت، −) | adjustment(تعدیل، amount علامت‌دار)
 const DAY=864e5;
-const DEF={token:'',chat:'',limit:5000000,days:30,bkHour:22,lastBk:'',aiUrl:'https://api.openai.com/v1',aiKey:'',aiModel:'gpt-4o-mini'};
+const DEF={token:'',chat:'',limit:5000000,days:30,bkHour:22,lastBk:'',aiUrl:'https://api.openai.com/v1',aiKey:'',aiModel:'gpt-4o-mini',aiAnon:true};
 const Store={d:{customers:[],tx:[],trash:[],log:[],voiceLog:[],schema:2,set:{...DEF},alerts:{}},ver:0,
  sgn:t=>t.type==='payment'?-t.amount:t.amount,
  mirror(t){t.cid=t.customerId;t.amt=this.sgn(t);t.note=t.description||'';t.ts=t.date;return t},

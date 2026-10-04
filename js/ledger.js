@@ -21,4 +21,15 @@ const Ledger={_c:new Map(),_v:-1,
    daysSinceOldestDebt:oldest?Math.round((today-this.day(oldest.date))/DAY):null,
    overdue,overdueDays:overdue.reduce((m,d)=>Math.max(m,d.overdueDays),0),todayDue:open.some(d=>d.state==='today'),nextDue:notdue[0]||null,
    status:overdue.length?'overdue':open.some(d=>d.state==='today')?'today':open.length?'notdue':'clear'};
-  if(cached)this._c.set(cid,{k:today,r});return r}};
+  if(cached)this._c.set(cid,{k:today,r});return r},
+ // امتیاز ریسک ۰ تا ۱۰۰ (شفاف و قابل توضیح): بخش زمانی (دیرکرد، سهم معوق، بی‌پرداختی) × وزن مبلغ + نسبت به حد مجاز.
+ // بدهی خیلی کوچک حتی اگر قدیمی باشد کمتر خطرناک حساب می‌شود (وزن مبلغ از ۰٫۴ تا ۱).
+ risk(cid){const a=this.analyze(cid),c=Store.d.customers.find(x=>x.id===cid)||{},lim=c.limit||Store.d.set.limit,R=[];
+  if(a.balance<=0)return{score:0,level:'low',reasons:['بدهی ندارد'],a};
+  let t=Math.min(40,a.overdueDays*.5);if(a.overdueDays>0)R.push(`${a.overdueDays} روز دیرکرد`);
+  const ov=a.overdue.reduce((x,d)=>x+d.remaining,0)/a.remaining;if(ov>0){t+=15*ov;R.push(`${Math.round(ov*100)}٪ بدهی سررسید گذشته`)}
+  const dp=a.daysSinceLastPayment;if(dp==null&&!(c.prevPay>0)){t+=10;R.push('پرداختی ثبت نشده')}else if(dp>60){t+=Math.min(10,dp/12);R.push(`${dp} روز از آخرین پرداخت`)}
+  if(a.overdue.length>1){t+=5;R.push(`${a.overdue.length} بدهی معوق`)}
+  const f=.4+.6*Math.min(1,a.remaining/(lim*.2));if(t>0&&f<.7)R.push('مبلغ بدهی کم است');
+  const u=a.remaining/lim;let s=t*f+Math.min(25,u*25)+(u>1?5:0);if(u>=.8)R.push(u>1?'بالاتر از حد مجاز':'نزدیک حد مجاز');
+  s=Math.round(Math.min(100,s));return{score:s,level:s>=55?'high':s>=25?'mid':'low',reasons:R.length?R:['وضعیت عادی'],a}}};
